@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <defs>
+    <linearGradient id="gradpartner4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e83e8c;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e83e8c;stop-opacity:0.7" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="300" fill="url(#gradpartner4)" />
+  <circle cx="200" cy="150" r="60" fill="white" opacity="0.9"/>
+  <path d="M180 150 L190 160 L220 130" stroke="#e83e8c" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="200" y="230" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="white" text-anchor="middle">partner4</text>
+</svg>
