@@ -133,7 +133,7 @@ const HeroSection = ({ totalDonations, activeDonors, onDonationClick }) => {
 
           <div className="col-lg-6">
             <motion.div
-              className="position-relative"
+              className="position-relative p-4"
               initial={{ x: 100, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.4 }}

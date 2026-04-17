@@ -16,7 +16,6 @@ import confetti from 'canvas-confetti';
 import HeroSection from './components/HeroSection';
 import CausesSection from './components/CausesSection';
 import NewsSection from './components/NewsSection';
-import MajorDonorsSection from './components/MajorDonorsSection';
 import PartnersSection from './components/PartnersSection';
 import SinglePageDonationFlow from './components/SinglePageDonationFlow';
 
@@ -46,6 +45,48 @@ damping: 10
 }
 }
 };
+
+const globalStyles = `
+  .nav-btn-soft {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .nav-btn-soft::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  .nav-btn-soft:hover::before {
+    left: 100%;
+  }
+  
+  .btn-don-soft {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn-don-soft::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.6s;
+  }
+  
+  .btn-don-soft:hover::before {
+    left: 100%;
+  }
+`;
 
 const App = () => {
 const [showDonationFlow, setShowDonationFlow] = useState(false);
@@ -125,23 +166,18 @@ setShowDonationFlow(false);
 // --- MAIN SITE RENDERING ---
 
 return (
-<div className="min-vh-100" style={{ backgroundColor: '#f8f9fa', overflowX: 'hidden' }}>
+<>
+<style>{globalStyles}</style>
+<div className="min-vh-100" style={{ background: COLORS.light }}>
 {/* Enhanced Styles */}
 <style>{`
 .transition-all { transition: all 0.3s ease; }
 .cursor-pointer { cursor: pointer; }
-.navbar-blur { backdrop-filter: blur(10px); background: rgba(255,255,255,0.95) !important; box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); }
-.hero-gradient { background: linear-gradient(135deg, #009E49 0%, #EF2B2D 50%, #FCD116 100%); }
-.card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-.card-hover:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
-.btn-gradient { background: linear-gradient(45deg, #009E49, #EF2B2D); border: none; }
-.btn-gradient:hover { background: linear-gradient(45deg, #007a3a, #d62020); transform: translateY(-2px); }
-@keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
-.floating { animation: float 3s ease-in-out infinite; }
-.glass-effect { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
-.text-gradient { background: linear-gradient(45deg, #009E49, #EF2B2D); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
-/* Correction pour la navbar fixe */
+  /* Correction pour la navbar fixe */
+  html {
+    scroll-behavior: smooth;
+  }
 html {
   scroll-behavior: smooth;
 }
@@ -152,6 +188,9 @@ html {
   left: 0 !important;
   right: 0 !important;
   z-index: 1030 !important;
+  background: rgba(248, 249, 250, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1) !important;
 }
 
 /* Ajout d'espace pour le contenu sous la navbar */
@@ -166,25 +205,24 @@ body {
 
 /* Styles forcés pour le nom Fasochain */
 .fasochain-brand {
-  font-size: 2.5rem !important;
-  font-weight: 900 !important;
-  margin-left: -50px !important;
-  padding-left: 0 !important;
+  font-size: 1.4rem !important;
+  font-weight: 700 !important;
+  margin-left: 20px !important;
+  left: 0px !important;
   position: relative !important;
-  left: -30px !important;
   display: flex !important;
   align-items: center !important;
 }
 
 .fasochain-brand span {
-  font-size: 2.5rem !important;
-  font-weight: 900 !important;
+  font-size: 1.4rem !important;
+  font-weight: 700 !important;
 }
 
 .fasochain-brand .text-gradient {
-  font-size: 2.5rem !important;
-  font-weight: 900 !important;
-  margin-left: 10px !important;
+  font-size: 1.8rem !important;
+  font-weight: 700 !important;
+  margin-left: 8px !important;
   color: COLORS.green !important;
   background: none !important;
   -webkit-background-clip: unset !important;
@@ -192,25 +230,25 @@ body {
 }
 
 .navbar-brand {
-  font-size: 2.5rem !important;
+  font-size: 1.8rem !important;
   font-weight: 900 !important;
-  margin-left: -50px !important;
-  padding-left: 0 !important;
+  margin-left: 0px !important;
+  padding-left: 20px !important;
   position: relative !important;
-  left: -30px !important;
+  left: 0px !important;
   display: flex !important;
   align-items: center !important;
 }
 
 .navbar-brand span {
-  font-size: 2.5rem !important;
+  font-size: 1.8rem !important;
   font-weight: 900 !important;
 }
 
 .navbar-brand .text-gradient {
-  font-size: 2.5rem !important;
+  font-size: 1.8rem !important;
   font-weight: 900 !important;
-  margin-left: 10px !important;
+  margin-left: 8px !important;
   color: COLORS.green !important;
   background: none !important;
   -webkit-background-clip: unset !important;
@@ -219,7 +257,7 @@ body {
 
 .navbar-brand .rounded-circle {
   flex-shrink: 0 !important;
-  margin-right: 1rem !important;
+  margin-right: 15px !important;
 }
 
 /* Styles forcés pour les boutons de navigation */
@@ -304,37 +342,37 @@ className="navbar-brand fw-bold d-flex align-items-center cursor-pointer fasocha
 whileHover={{ scale: 1.05 }}
 whileTap={{ scale: 0.95 }}
 style={{ 
-  fontSize: '2.5rem !important', 
-  fontWeight: '900 !important',
-  marginLeft: '-50px !important',
+  fontSize: '1.4rem !important', 
+  fontWeight: '700 !important',
+  marginLeft: '20px !important',
   paddingLeft: '0 !important',
   position: 'relative !important',
-  left: '-30px !important'
+  left: '0px !important'
 }}
 >
 <motion.div 
-className="rounded-circle me-4 d-flex align-items-center justify-content-center floating"
-style={{ 
-  width: '55px', 
-  height: '55px', 
-  background: `linear-gradient(45deg, ${COLORS.green}, ${COLORS.red})`,
-  flexShrink: 0
-}}
+  className="rounded-circle me-4 d-flex align-items-center justify-content-center floating"
+  style={{ 
+    width: '40px', 
+    height: '40px', 
+    background: `linear-gradient(45deg, ${COLORS.green}, ${COLORS.red})`,
+    flexShrink: 0
+  }}
 >
-<Zap size={30} color="white" fill="white" />
+  <Zap size={22} color="white" fill="white" />
 </motion.div>
 <div className="d-flex flex-nowrap">
-<span style={{ 
-  fontSize: '2.5rem !important',
-  fontWeight: '900 !important',
-  color: COLORS.green,
-  marginLeft: '10px !important'
-}}>Faso</span>
-<span style={{ 
-  color: COLORS.red, 
-  fontSize: '2.5rem !important',
-  fontWeight: '900 !important'
-}}>chain</span>
+  <span style={{ 
+    fontSize: '1.8rem !important',
+    fontWeight: '900 !important',
+    color: COLORS.green,
+    marginLeft: '10px !important'
+  }}>Faso</span>
+  <span style={{ 
+    color: COLORS.red, 
+    fontSize: '1.8rem !important',
+    fontWeight: '900 !important'
+  }}>chain</span>
 </div>
 </motion.div>
 
@@ -351,34 +389,38 @@ onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
 { name: 'Accueil', href: '#accueil' },
 { name: 'Causes', href: '#causes' },
 { name: 'Actualités', href: '#actualites' },
-{ name: 'Dons Majeurs', href: '#dons-majeurs' },
 { name: 'Partenaires', href: '#partenaires' }
 ].map((item, index) => (
 <motion.div 
   key={item.name} 
-  whileHover={{ scale: 1.05 }} 
-  whileTap={{ scale: 0.95 }}
+  whileHover={{ scale: 1.02 }} 
+  whileTap={{ scale: 0.98 }}
   className="mx-2"
 >
   <Nav.Link 
     href={item.href} 
-    className="px-4 py-2 rounded-pill text-decoration-none fw-bold nav-btn-custom"
+    className="px-4 py-2 rounded-3 text-decoration-none fw-medium nav-btn-soft"
     style={{
-      backgroundColor: '#f8f9fa !important',
-      color: COLORS.green + ' !important',
-      border: `2px solid ${COLORS.green} !important`,
-      transition: 'all 0.3s ease !important',
-      fontSize: '1rem !important'
+      backgroundColor: 'rgba(248, 249, 250, 0.8)',
+      color: '#2c3e50',
+      border: 'none',
+      transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+      fontSize: '0.95rem',
+      letterSpacing: '0.3px',
+      backdropFilter: 'blur(10px)',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)'
     }}
     onMouseEnter={(e) => {
-      e.target.style.backgroundColor = COLORS.green + ' !important';
-      e.target.style.color = 'white !important';
-      e.target.style.transform = 'translateY(-2px) !important';
+      e.target.style.backgroundColor = 'rgba(0, 158, 73, 0.08)';
+      e.target.style.color = COLORS.green;
+      e.target.style.transform = 'translateY(-1px)';
+      e.target.style.boxShadow = '0 4px 12px rgba(0, 158, 73, 0.15)';
     }}
     onMouseLeave={(e) => {
-      e.target.style.backgroundColor = '#f8f9fa !important';
-      e.target.style.color = COLORS.green + ' !important';
-      e.target.style.transform = 'translateY(0px) !important';
+      e.target.style.backgroundColor = 'rgba(248, 249, 250, 0.8)';
+      e.target.style.color = '#2c3e50';
+      e.target.style.transform = 'translateY(0px)';
+      e.target.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.06)';
     }}
   >
     {item.name}
@@ -425,10 +467,6 @@ Je contribue
 <NewsSection />
 </section>
 
-{/* Major Donors Section */}
-<section id="dons-majeurs">
-<MajorDonorsSection />
-</section>
 
 {/* Partners Section */}
 <section id="partenaires">
@@ -471,7 +509,7 @@ Fasochain
 <motion.div whileHover={{ scale: 1.02 }}>
 <h5 className="fw-bold mb-3">Navigation Rapide</h5>
 <div className="d-flex flex-column gap-2">
-{['Causes', 'Actualités', 'Dons Majeurs', 'Partenaires'].map((item) => (
+{['Causes', 'Actualités', 'Partenaires'].map((item) => (
 <motion.a
 key={item}
 href={`#${item.toLowerCase().replace(' ', '-')}`}
@@ -507,12 +545,31 @@ whileTap={{ scale: 0.8 }}
 ))}
 </div>
 <div className="mt-3">
-<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+<motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
 <Button 
-variant="success" 
-className="rounded-pill px-4 py-2 fw-bold"
-style={{ background: 'linear-gradient(45deg, #009E49, #EF2B2D)', border: 'none' }}
-onClick={openDonationFlow}
+className="rounded-4 px-4 fw-medium shadow-sm btn-don-soft" 
+style={{ 
+background: 'linear-gradient(135deg, rgba(0, 158, 73, 0.9), rgba(0, 158, 73, 0.8))', 
+border: 'none',
+color: 'white',
+padding: '10px 20px',
+fontSize: '0.95rem',
+letterSpacing: '0.5px',
+transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+backdropFilter: 'blur(10px)',
+boxShadow: '0 4px 16px rgba(0, 158, 73, 0.2)'
+}}
+onMouseEnter={(e) => {
+  e.target.style.background = 'linear-gradient(135deg, rgba(0, 158, 73, 0.95), rgba(0, 158, 73, 0.85))';
+  e.target.style.transform = 'translateY(-2px)';
+  e.target.style.boxShadow = '0 6px 20px rgba(0, 158, 73, 0.3)';
+}}
+onMouseLeave={(e) => {
+  e.target.style.background = 'linear-gradient(135deg, rgba(0, 158, 73, 0.9), rgba(0, 158, 73, 0.8))';
+  e.target.style.transform = 'translateY(0px)';
+  e.target.style.boxShadow = '0 4px 16px rgba(0, 158, 73, 0.2)';
+}}
+onClick={() => openDonationFlow()} 
 >
 <Heart className="me-2" size={16} />
 Faire un don
@@ -532,6 +589,7 @@ whileHover={{ scale: 1.02 }}
 </Container>
 </motion.footer>
 </div>
+</>
 );
 };
 

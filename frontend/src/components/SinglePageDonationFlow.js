@@ -116,6 +116,10 @@ const SinglePageDonationFlow = ({ onClose, onDonationComplete, preselectedCause 
     setError(null);
     setPaymentProgress(0);
 
+    // Créer un timeout controller
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 secondes
+
     try {
       // Simulation de progression
       const progressInterval = setInterval(() => {
@@ -139,7 +143,8 @@ const SinglePageDonationFlow = ({ onClose, onDonationComplete, preselectedCause 
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
+        signal: controller.signal
       });
       
       clearInterval(progressInterval);
@@ -187,8 +192,21 @@ const SinglePageDonationFlow = ({ onClose, onDonationComplete, preselectedCause 
       
       setStep(2);
     } catch (err) {
-      setError("Impossible de générer la facture. Veuillez réessayer.");
+      console.error('Erreur de génération de facture:', err);
+      
+      // Gestion spécifique des erreurs réseau
+      if (err.name === 'AbortError') {
+        setError("Le serveur met trop de temps à répondre. Vérifiez votre connexion et réessayez.");
+      } else if (err.message.includes('ERR_CONNECTION_REFUSED')) {
+        setError("Impossible de se connecter au serveur. Vérifiez que le backend est démarré.");
+      } else if (err.message.includes('ERR_NETWORK_CHANGED') || err.message.includes('ERR_INTERNET_DISCONNECTED')) {
+        setError("Problème de connexion réseau. Vérifiez votre connexion internet.");
+      } else {
+        setError(`Erreur: ${err.message || 'Impossible de générer la facture. Veuillez réessayer.'}`);
+      }
     } finally {
+      clearTimeout(timeoutId);
+      controller.abort();
       setLoading(false);
       setTimeout(() => setPaymentProgress(0), 1000);
     }
@@ -224,19 +242,42 @@ const SinglePageDonationFlow = ({ onClose, onDonationComplete, preselectedCause 
     }, 2000);
   };
 
+  const handleOverlayClick = (e) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="min-vh-100 d-flex align-items-center justify-content-center" style={{ background: 'rgba(0,0,0,0.8)' }}>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+      style={{ 
+        background: 'rgba(0, 0, 0, 0.8)',
+        backdropFilter: 'blur(10px)',
+        zIndex: 1050
+      }}
+      onClick={handleOverlayClick}
+    >
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="w-100"
-        style={{ maxWidth: '1200px', maxHeight: '90vh', overflow: 'hidden' }}
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 100 }}
+        className="bg-white rounded-4 shadow-lg p-3"
+        style={{ 
+          maxWidth: '800px',
+          width: '98%',
+          maxHeight: '90vh',
+          overflowY: 'auto'
+        }}
+        onClick={(e) => e.stopPropagation()}
       >
-        <Card className="border-0 shadow-lg" style={{ height: '90vh', borderRadius: '20px' }}>
+        <Card className="border-0 shadow-lg" style={{ height: '85vh', borderRadius: '12px' }}>
           {/* Header */}
-          <div className="position-relative p-4 border-bottom" style={{ background: COLORS.gradient, borderRadius: '20px 20px 0 0' }}>
+          <div className="position-relative p-2 border-bottom" style={{ background: COLORS.gradient, borderRadius: '12px 12px 0 0' }}>
             <Button
               variant="link"
               className="position-absolute top-0 end-0 m-3 text-white"
@@ -247,15 +288,20 @@ const SinglePageDonationFlow = ({ onClose, onDonationComplete, preselectedCause 
             </Button>
             
             <div className="text-center text-white">
-              <motion.div
-                animate={{ rotate: [0, 10, -10, 0] }}
-                transition={{ repeat: Infinity, duration: 4 }}
-                className="d-inline-block mb-3"
+              <motion.div 
+                className="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-1"
+                style={{ 
+                  width: '40px', 
+                  height: '40px', 
+                  background: `linear-gradient(45deg, ${COLORS.green}, ${COLORS.red})` 
+                }}
               >
-                <Zap size={60} />
+                <Heart size={20} color="white" fill="white" />
               </motion.div>
-              <h1 className="display-5 fw-bold mb-2">Fasochain</h1>
-              <p className="lead mb-0">Système de Dons Lightning</p>
+              <h5 className="fw-bold mb-1">Soutenir Fasochain</h5>
+              <p className="mb-0 opacity-75" style={{ fontSize: '0.75rem' }}>
+                Votre contribution patriotique fait la différence
+              </p>
             </div>
 
             {/* Progress Indicator */}
@@ -287,7 +333,7 @@ const SinglePageDonationFlow = ({ onClose, onDonationComplete, preselectedCause 
           </div>
 
           {/* Content */}
-          <div className="p-4" style={{ height: 'calc(90vh - 200px)', overflowY: 'auto' }}>
+          <Card.Body className="p-4" style={{ height: 'calc(100% - 120px)', overflowY: 'auto' }}>
             <AnimatePresence mode="wait">
               {step === 1 && (
                 <motion.div
@@ -297,7 +343,7 @@ const SinglePageDonationFlow = ({ onClose, onDonationComplete, preselectedCause 
                   exit={{ opacity: 0, x: -50 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <h3 className="fw-bold mb-4">Choisissez votre cause</h3>
+                  <h4 className="fw-bold mb-4">Choisissez votre cause</h4>
                   
                   {/* Causes Selection */}
                   <div className="row g-3 mb-4">
@@ -321,13 +367,13 @@ const SinglePageDonationFlow = ({ onClose, onDonationComplete, preselectedCause 
                                 : 'white'
                             }}
                           >
-                            <Card.Body className="text-center p-3">
+                            <Card.Body className="text-center p-4">
                               <div className="mb-2">
                                 <img 
                                   src={cause.image} 
                                   alt={cause.title}
                                   className="img-fluid rounded-circle mb-2"
-                                  style={{ width: '60px', height: '60px', objectFit: 'cover' }}
+                                  style={{ width: '80px', height: '80px', objectFit: 'cover' }}
                                 />
                               </div>
                               <Card.Title className="fw-bold small">{cause.title}</Card.Title>
@@ -343,20 +389,29 @@ const SinglePageDonationFlow = ({ onClose, onDonationComplete, preselectedCause 
                   </div>
 
                   {/* Amount Selection */}
-                  <h4 className="fw-bold mb-3">Montant du don</h4>
+                  <h4 className="fw-bold mb-4">Montant du don</h4>
                   
                   {/* Preset Amounts */}
-                  <div className="mb-3">
+                  <div className="mb-4">
                     <div className="d-flex flex-wrap gap-2">
                       {PRESET_AMOUNTS.map((presetAmount) => (
                         <motion.button
                           key={presetAmount}
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
-                          className={`btn btn-outline-success rounded-pill ${
-                            amount === presetAmount ? 'btn-success' : ''
+                          className={`btn rounded-pill ${
+                            amount === presetAmount 
+                              ? 'btn-success text-white shadow-lg' 
+                              : 'btn-outline-success'
                           }`}
-                          style={{ fontSize: '0.8rem', minWidth: '80px' }}
+                          style={{ 
+                            fontSize: '0.9rem', 
+                            minWidth: '100px', 
+                            padding: '10px 18px',
+                            fontWeight: amount === presetAmount ? '700' : '400',
+                            border: amount === presetAmount ? '2px solid #009E49' : '2px solid #009E49',
+                            transform: amount === presetAmount ? 'scale(1.05)' : 'scale(1)'
+                          }}
                           onClick={() => handlePresetAmount(presetAmount)}
                         >
                           {presetAmount >= 1000 ? `${presetAmount/1000}k` : presetAmount} sats
@@ -366,7 +421,7 @@ const SinglePageDonationFlow = ({ onClose, onDonationComplete, preselectedCause 
                   </div>
 
                   {/* Custom Amount Input */}
-                  <InputGroup size="lg" className="mb-4">
+                  <InputGroup className="mb-4">
                     <InputGroup.Text className="bg-white border-end-0">
                       <Zap size={20} color={COLORS.yellow} fill={COLORS.yellow}/>
                     </InputGroup.Text>
@@ -377,13 +432,13 @@ const SinglePageDonationFlow = ({ onClose, onDonationComplete, preselectedCause 
                       max="1000000"
                       value={amount}
                       onChange={(e) => handleAmountChange(e.target.value)}
-                      className="border-start-0 ps-0 fw-bold"
+                      className="border-start-0 ps-0 fw-bold fs-5"
                       placeholder="1000"
                     />
                     <InputGroup.Text className="bg-white border-start-0">sats</InputGroup.Text>
                   </InputGroup>
                   
-                  <Form.Text className="text-muted small mb-4 d-block">
+                  <Form.Text className="text-muted mb-4 d-block fs-6">
                     Minimum 10 sats pour soutenir l'effort national
                   </Form.Text>
 
@@ -394,8 +449,8 @@ const SinglePageDonationFlow = ({ onClose, onDonationComplete, preselectedCause 
                       animate={{ opacity: 1 }}
                       className="mb-3"
                     >
-                      <ProgressBar now={paymentProgress} variant="success" className="mb-2" />
-                      <p className="text-center small text-muted">
+                      <ProgressBar now={paymentProgress} variant="success" className="mb-3" style={{ height: '12px' }} />
+                      <p className="text-center fs-6 text-muted">
                         {paymentProgress < 90 ? 'Génération de la facture...' : 'Finalisation...'}
                       </p>
                     </motion.div>
@@ -407,7 +462,7 @@ const SinglePageDonationFlow = ({ onClose, onDonationComplete, preselectedCause 
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                     >
-                      <Alert variant="danger" className="mb-3 small">
+                      <Alert variant="danger" className="mb-4 fs-6">
                         <X className="me-2" size={16} />
                         {error}
                       </Alert>
@@ -419,7 +474,7 @@ const SinglePageDonationFlow = ({ onClose, onDonationComplete, preselectedCause 
                     <Button
                       variant="success"
                       size="lg"
-                      className="rounded-pill px-5 py-3 fw-bold shadow-sm"
+                      className="rounded-pill px-5 py-3 fw-bold shadow-lg fs-5"
                       disabled={loading || amount < 10}
                       onClick={generateInvoice}
                       style={{ backgroundColor: COLORS.green, border: 'none' }}
@@ -449,16 +504,16 @@ const SinglePageDonationFlow = ({ onClose, onDonationComplete, preselectedCause 
                   transition={{ duration: 0.3 }}
                   className="text-center"
                 >
-                  <h3 className="fw-bold mb-4">Facture Lightning générée</h3>
+                  <h4 className="fw-bold mb-4 fs-3">Facture Lightning générée</h4>
                   
                   <div className="bg-light p-4 rounded-3 mb-4">
-                    <p className="text-muted small mb-2 text-uppercase fw-bold">Facture Lightning (BOLT11)</p>
+                    <p className="text-muted mb-3 text-uppercase fw-bold fs-5">Facture Lightning (BOLT11)</p>
                     
                     {/* Hash de l'adresse Lightning */}
                     <div className="mb-3">
-                      <p className="text-muted small mb-1">Hash de l'adresse:</p>
+                      <p className="text-muted mb-2 fs-6">Hash de l'adresse:</p>
                       <div className="d-flex align-items-center gap-2">
-                        <code className="flex-grow-1 p-2 bg-white rounded border small" style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}>
+                        <code className="flex-grow-1 p-3 bg-white rounded border fs-6" style={{ fontFamily: 'monospace' }}>
                           {invoiceHash}
                         </code>
                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -485,8 +540,8 @@ const SinglePageDonationFlow = ({ onClose, onDonationComplete, preselectedCause 
                     
                     {/* Code complet de la facture */}
                     <div className="mb-3">
-                      <p className="text-muted small mb-1">Code complet:</p>
-                      <code className="d-block p-3 bg-white rounded border text-break small" style={{ maxHeight: '120px', overflowY: 'auto', fontFamily: 'monospace' }}>
+                      <p className="text-muted mb-2 fs-6">Code complet:</p>
+                      <code className="d-block p-4 bg-white rounded border text-break fs-6" style={{ maxHeight: '200px', overflowY: 'auto', fontFamily: 'monospace' }}>
                         {invoice}
                       </code>
                     </div>
@@ -494,7 +549,7 @@ const SinglePageDonationFlow = ({ onClose, onDonationComplete, preselectedCause 
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                       <Button
                         variant={copied ? "success" : "outline-dark"}
-                        className="rounded-pill px-4"
+                        className="rounded-pill px-5 py-3 fs-5"
                         onClick={copyToClipboard}
                       >
                         {copied ? (
@@ -516,28 +571,48 @@ const SinglePageDonationFlow = ({ onClose, onDonationComplete, preselectedCause 
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                       <Button
                         variant="outline-secondary"
+                        size="lg"
+                        className="rounded-pill px-4 py-2 fs-5"
                         onClick={() => setStep(1)}
                       >
                         <ArrowRight size={16} className="me-1 rotate-180" />
                         Retour
                       </Button>
                     </motion.div>
-                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <motion.div 
+                      whileHover={{ scale: 1.05 }} 
+                      whileTap={{ scale: 0.95 }}
+                      animate={isProcessing ? { scale: [1, 1.1, 1] } : {}}
+                      transition={isProcessing ? { repeat: Infinity, duration: 1 } : {}}
+                    >
                       <Button
                         variant="danger"
                         size="lg"
-                        className="rounded-pill fw-bold shadow"
+                        className="rounded-pill fw-bold shadow-lg px-5 py-3 fs-5"
                         onClick={finalizePayment}
                         disabled={isProcessing}
-                        style={{ backgroundColor: COLORS.red, border: 'none' }}
                       >
                         {isProcessing ? (
                           <>
-                            <Loader2 className="animate-spin me-2" size={20} />
-                            Vérification...
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{ repeat: Infinity, duration: 1 }}
+                              style={{ display: 'inline-block' }}
+                            >
+                              <Heart className="me-2" size={18} />
+                            </motion.div>
+                            Traitement...
                           </>
                         ) : (
-                          "J'ai effectué le paiement"
+                          <>
+                            <motion.div
+                              whileHover={{ scale: 1.2 }}
+                              style={{ display: 'inline-block' }}
+                            >
+                              <Heart className="me-2" size={18} />
+                            </motion.div>
+                            Confirmer le paiement
+                          </>
                         )}
                       </Button>
                     </motion.div>
@@ -629,10 +704,10 @@ const SinglePageDonationFlow = ({ onClose, onDonationComplete, preselectedCause 
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          </Card.Body>
         </Card>
       </motion.div>
-    </div>
+    </motion.div>
   );
 };
 
